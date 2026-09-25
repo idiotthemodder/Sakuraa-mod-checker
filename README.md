@@ -8,7 +8,7 @@ This project was rebuilt and extended with heavy help from Claude (Anthropic's A
 
 - **Mod / cheat detection** — known-mods, known-cheats, and unsure lists with exact-match and wildcard (`~fragment=LABEL`) support, live-reloadable without restarting the game
 - **Spotify controls** — play/pause/next/previous from inside the game, patched to work without the original Windows-only Spotify integration
-- **Lyrics HUD integration** — togglable in-menu lyrics view with position/size/color settings
+- **Lyrics HUD integration** — togglable in-menu lyrics view with position/size/color settings (THIS IS ANOTHER MOD, JUST CHANGES CONFIG) 
 - **Nametag customization** — extra nametag display options, colored by category, distance fade, friend hiding
 - **Theming** — dark/light/extra theme pages with settings that actually persist across restarts
 - **VR map loader** — load maps from inside the VR menu
