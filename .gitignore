@@ -4,3 +4,6 @@ obj/
 *.bak-*
 *.pre-*
 *.tmp
+CleanPayload.*.dll
+CleanPayload.*.dll.br
+Harmony.PatchInfo.bin
