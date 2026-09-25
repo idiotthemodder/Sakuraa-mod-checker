@@ -1,0 +1,171 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using BepInEx;
+using Photon.Pun;
+using Photon.Realtime;
+using UnityEngine;
+
+namespace SakuraaCameraClientStandalone;
+
+public sealed class UnknownPropLogger : MonoBehaviour
+{
+	private float _next;
+
+	private void Update()
+	{
+		if (Time.unscaledTime < _next)
+		{
+			return;
+		}
+		_next = Time.unscaledTime + 3f;
+		StandalonePlugin.UnknownScanTick();
+	}
+}
+
+public sealed partial class StandalonePlugin
+{
+	private static Type _lobbyPage;
+	private static string _unknownPath;
+	private static bool _unknownErrLogged;
+	private static readonly HashSet<string> _seenUnknown = new HashSet<string>();
+
+	private static void StartUnknownLogger(Assembly core)
+	{
+		_lobbyPage = core.GetType("SakuraaCastingMod.VR.UtilMenu.Pages.LobbyPage", throwOnError: true);
+		_unknownPath = Path.Combine(Paths.ConfigPath, "sakuraa_unknown_props.txt");
+		try
+		{
+			if (File.Exists(_unknownPath))
+			{
+				foreach (string raw in File.ReadAllLines(_unknownPath))
+				{
+					string line = raw.Trim();
+					int eq = line.LastIndexOf('=');
+					if (line.Length > 0 && !line.StartsWith("#") && eq > 0)
+					{
+						_seenUnknown.Add(line.Substring(0, eq));
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Debug.LogError((object)("[UnknownProps] load failed: " + ex.Message));
+		}
+		GameObject go = new GameObject("SakuraaUnknownPropLogger");
+		UnityEngine.Object.DontDestroyOnLoad(go);
+		go.AddComponent<UnknownPropLogger>();
+	}
+
+	private static string EscapeText(string s)
+	{
+		return s.Replace("\r", "\\r").Replace("\n", "\\n");
+	}
+
+	private static void AddKeysFromFile(HashSet<string> known, string fileName)
+	{
+		string path = Path.Combine(Paths.ConfigPath, fileName);
+		if (!File.Exists(path))
+		{
+			return;
+		}
+		foreach (string raw in File.ReadAllLines(path))
+		{
+			string line = raw.Trim();
+			int eq = line.IndexOf('=');
+			if (line.Length > 0 && !line.StartsWith("#") && eq > 0)
+			{
+				known.Add(line.Substring(0, eq).Trim());
+			}
+		}
+	}
+
+	private static HashSet<string> BuildKnownKeys()
+	{
+		HashSet<string> known = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		string[] names = new string[5] { "_hardcodedCheats", "_hardcodedSafeMods", "_hardcodedUnknownMods", "_webKnownMods", "_webKnownCheats" };
+		foreach (string name in names)
+		{
+			FieldInfo field = _lobbyPage.GetField(name, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+			Dictionary<string, string> dict = (field != null) ? (field.GetValue(null) as Dictionary<string, string>) : null;
+			if (dict == null)
+			{
+				continue;
+			}
+			foreach (string key in dict.Keys)
+			{
+				known.Add(key);
+			}
+		}
+		AddKeysFromFile(known, "sakuraa_known_mods.txt");
+		AddKeysFromFile(known, "sakuraa_known_cheats.txt");
+		return known;
+	}
+
+	internal static void UnknownScanTick()
+	{
+		try
+		{
+			if (!PhotonNetwork.InRoom)
+			{
+				return;
+			}
+			Player[] players = PhotonNetwork.PlayerList;
+			if (players == null)
+			{
+				return;
+			}
+			HashSet<string> known = BuildKnownKeys();
+			foreach (Player p in players)
+			{
+				if (p == null || p.IsLocal || p.CustomProperties == null)
+				{
+					continue;
+				}
+				foreach (var entry in p.CustomProperties)
+				{
+					string key = (entry.Key != null) ? entry.Key.ToString() : null;
+					if (string.IsNullOrEmpty(key) || known.Contains(key))
+					{
+						continue;
+					}
+					string lower = key.ToLowerInvariant();
+					if (lower == "didtutorial" || lower == "platform" || lower == "mothershipid")
+					{
+						continue;
+					}
+					if (lower.Contains("gorillashirts") || lower.Contains("juul"))
+					{
+						continue;
+					}
+					string escaped = EscapeText(key);
+					if (!_seenUnknown.Add(escaped))
+					{
+						continue;
+					}
+					string value = (entry.Value != null) ? EscapeText(entry.Value.ToString()) : "null";
+					if (Guid.TryParse(value, out _))
+					{
+						value = "<id>";
+					}
+					if (value.Length > 40)
+					{
+						value = value.Substring(0, 40) + "...";
+					}
+					string stamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+					File.AppendAllText(_unknownPath, "# first seen " + stamp + " | value: " + value + "\n" + escaped + "=?\n");
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			if (!_unknownErrLogged)
+			{
+				_unknownErrLogged = true;
+				Debug.LogError((object)("[UnknownProps] " + ex.Message));
+			}
+		}
+	}
+}

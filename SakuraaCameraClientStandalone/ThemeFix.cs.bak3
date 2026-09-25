@@ -1,0 +1,123 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
+using UnityEngine;
+
+namespace SakuraaCameraClientStandalone;
+
+public sealed class ThemeReapplier : MonoBehaviour
+{
+	private float _next;
+
+	private void Update()
+	{
+		if (Time.unscaledTime < _next)
+		{
+			return;
+		}
+		_next = Time.unscaledTime + 1f;
+		StandalonePlugin.ThemeTick();
+	}
+}
+
+public sealed partial class StandalonePlugin
+{
+	private static MethodInfo _reapplyTheme;
+	private static Type _themeType;
+	private static float _themeLoadedAt = -1f;
+	private static int _themeRuns;
+
+	private static void StartThemeFix(Assembly core)
+	{
+		try
+		{
+			_themeType = core.GetType("SakuraaCastingMod.VR.UtilMenu.Utility.ThemeManager", throwOnError: true);
+			_reapplyTheme = _themeType.GetMethod("ReapplyCurrentTheme", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+			if (_reapplyTheme == null)
+			{
+				throw new MissingMethodException(_themeType.FullName, "ReapplyCurrentTheme");
+			}
+			GameObject go = new GameObject("SakuraaThemeReapplier");
+			UnityEngine.Object.DontDestroyOnLoad(go);
+			go.AddComponent<ThemeReapplier>();
+			StatusLog("theme fix installed");
+		}
+		catch (Exception ex)
+		{
+			StatusLog("theme fix failed: " + ex.Message);
+		}
+	}
+
+	private static string ColorText(Color c)
+	{
+		return c.r.ToString("F2") + "," + c.g.ToString("F2") + "," + c.b.ToString("F2");
+	}
+
+	private static string ThemeState()
+	{
+		try
+		{
+			BindingFlags all = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+			FieldInfo themesField = _themeType.GetField("AvailableThemes", all);
+			object themes = (themesField != null) ? themesField.GetValue(null) : null;
+			int count = (themes is ICollection list) ? list.Count : -1;
+			FieldInfo idxField = _themeType.GetField("CurrentThemeIndex", all);
+			FieldInfo customField = _themeType.GetField("IsCustomThemeEnabled", all);
+			FieldInfo slotField = _themeType.GetField("ActiveCustomSlot", all);
+			FieldInfo savedField = _themeType.GetField("CustomSlot1Saved", all);
+			object saved = (savedField != null) ? savedField.GetValue(null) : null;
+			int savedCount = (saved is ICollection savedList) ? savedList.Count : -1;
+			string live = "?";
+			FieldInfo colorsField = _themeType.GetField("_customColors", all);
+			Dictionary<string, Color> colors = (colorsField != null) ? (colorsField.GetValue(null) as Dictionary<string, Color>) : null;
+			if (colors != null && colors.ContainsKey("BUTTON"))
+			{
+				live = ColorText(colors["BUTTON"]);
+			}
+			string mat = "?";
+			FieldInfo matsField = _themeType.GetField("_materials", all);
+			Dictionary<string, Material> mats = (matsField != null) ? (matsField.GetValue(null) as Dictionary<string, Material>) : null;
+			if (mats != null)
+			{
+				Material m;
+				mat = (mats.TryGetValue("BUTTON", out m) && m != null) ? ColorText(m.color) : ("none, " + mats.Count + " mats");
+			}
+			return "themes=" + count + " idx=" + ((idxField != null) ? idxField.GetValue(null) : "?") + " custom=" + ((customField != null) ? customField.GetValue(null) : "?") + " slot=" + ((slotField != null) ? slotField.GetValue(null) : "?") + " slot1saved=" + savedCount + " liveBTN=" + live + " matBTN=" + mat;
+		}
+		catch (Exception ex)
+		{
+			return "state failed: " + ex.Message;
+		}
+	}
+
+	internal static void ThemeTick()
+	{
+		if (!_settingsLoaded || _reapplyTheme == null || _themeRuns >= 3)
+		{
+			return;
+		}
+		if (_themeLoadedAt < 0f)
+		{
+			_themeLoadedAt = Time.unscaledTime;
+			StatusLog("theme state at load: " + ThemeState());
+			return;
+		}
+		float[] delays = new float[3] { 4f, 12f, 30f };
+		if (Time.unscaledTime - _themeLoadedAt < delays[_themeRuns])
+		{
+			return;
+		}
+		_themeRuns++;
+		try
+		{
+			_reapplyTheme.Invoke(null, null);
+			StatusLog("theme reapplied (" + _themeRuns + ") " + ThemeState());
+		}
+		catch (Exception ex)
+		{
+			Exception inner = (ex.InnerException != null) ? ex.InnerException : ex;
+			StatusLog("theme reapply failed: " + inner.Message);
+		}
+	}
+}

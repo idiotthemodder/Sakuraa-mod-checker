@@ -1,0 +1,186 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using BepInEx;
+using SakuraaCastingMod.Shared.Models;
+using SakuraaCastingMod.VR.UtilMenu;
+using SakuraaCastingMod.VR.UtilMenu.Pages;
+using UnityEngine;
+
+namespace SakuraaCameraClientStandalone;
+
+public sealed class SakInfoPage : BasePage
+{
+	public override string PageName => "SAK INFO";
+
+	public override Material PageIcon => UtilMenuMain.Instance.Icons.ClosedBook;
+
+	public override void BuildTabs()
+	{
+		Tabs.Clear();
+		UtilTab lists = new UtilTab
+		{
+			TabIcon = UtilMenuMain.Instance.Icons.ClosedBook,
+			TabName = "Lists"
+		};
+		foreach (string line in StandalonePlugin.ListSummaryLines())
+		{
+			lists.Elements.Add(new MenuElement(line, delegate
+			{
+			}));
+		}
+		lists.Elements.Add(new MenuElement("RELOAD LISTS", delegate
+		{
+			StandalonePlugin.ReloadListsNow();
+			RefreshMenu();
+		}));
+		Tabs.Add(lists);
+		UtilTab changelog = new UtilTab
+		{
+			TabIcon = UtilMenuMain.Instance.Icons.ClosedBook,
+			TabName = "Changelog"
+		};
+		foreach (string line in StandalonePlugin.ChangelogLines())
+		{
+			changelog.Elements.Add(new MenuElement(line, delegate
+			{
+			}));
+		}
+		Tabs.Add(changelog);
+	}
+
+	public override void RefreshPageUI()
+	{
+		BuildTabs();
+	}
+
+	private static void RefreshMenu()
+	{
+		if (UtilMenuController.Instance != null)
+		{
+			UtilMenuController.Instance.RefreshUI();
+		}
+	}
+}
+
+public static class MenuPages
+{
+	public static void Install(Assembly core)
+	{
+		Type controller = core.GetType("SakuraaCastingMod.VR.UtilMenu.UtilMenuController", throwOnError: true);
+		MethodInfo target = controller.GetMethod("LoadPages", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+		if (target == null)
+		{
+			throw new MissingMethodException(controller.FullName, "LoadPages");
+		}
+		MethodInfo post = typeof(MenuPages).GetMethod("LoadPagesPostfix", BindingFlags.Static | BindingFlags.NonPublic);
+		new HarmonyLib.Harmony("local.sakuraa.menupages").Patch(target, postfix: new HarmonyLib.HarmonyMethod(post));
+		StandalonePlugin.StatusLog("menu pages patch installed");
+	}
+
+	private static void LoadPagesPostfix(UtilMenuController __instance)
+	{
+		try
+		{
+			__instance.Pages.Add(new SakInfoPage());
+			__instance.Pages.Add(new UnknownPage());
+			__instance.Pages.Add(new MapLoaderPage());
+			__instance.Pages.Add(new AboutPage());
+			__instance.Pages.Add(new NameTagPlusPage());
+			StandalonePlugin.StatusLog("added SAK INFO page");
+		}
+		catch (Exception ex)
+		{
+			StandalonePlugin.StatusLog("add page failed: " + ex.Message);
+		}
+	}
+}
+
+public sealed partial class StandalonePlugin
+{
+	internal static DateTime _listsLoadedAt = DateTime.MinValue;
+	private static string[] _changelogCache;
+	private static int _changelogTick = -100000;
+
+	private static void PatchMenuPages(Assembly core)
+	{
+		try
+		{
+			MenuPages.Install(core);
+		}
+		catch (Exception ex)
+		{
+			StatusLog("menu pages failed: " + ex.Message);
+		}
+	}
+
+	internal static string[] ListSummaryLines()
+	{
+		string when = (_listsLoadedAt == DateTime.MinValue) ? "not yet" : _listsLoadedAt.ToString("HH:mm:ss");
+		return new string[5]
+		{
+			"MODS: " + _listAdded[0].Count,
+			"CHEATS: " + _listAdded[1].Count,
+			"UNSURE: " + _listAdded[2].Count,
+			"WILDCARDS: " + _wildcards.Count,
+			"LOADED: " + when
+		};
+	}
+
+	internal static void ReloadListsNow()
+	{
+		try
+		{
+			LoadAllLists();
+			_listsReady = true;
+		}
+		catch (Exception ex)
+		{
+			StatusLog("manual reload failed: " + ex.Message);
+		}
+	}
+
+	internal static string[] ChangelogLines()
+	{
+		if (_changelogCache != null && Environment.TickCount - _changelogTick < 3000)
+		{
+			return _changelogCache;
+		}
+		string[] result;
+		try
+		{
+			string path = Path.Combine(Paths.ConfigPath, "sakuraa_changelog.txt");
+			if (!File.Exists(path))
+			{
+				File.WriteAllLines(path, new string[8] { "Linux standalone build", "Spotify media buttons work", "Settings autosave every 5s", "Known lists + live reload", "Wildcards: ~fragment=LABEL", "Yellow unsure list", "Unknown property logger", "Info page: lists + changelog" });
+			}
+			List<string> lines = new List<string>();
+			foreach (string raw in File.ReadAllLines(path))
+			{
+				string line = raw.Trim();
+				if (line.Length == 0)
+				{
+					continue;
+				}
+				if (line.Length > 34)
+				{
+					line = line.Substring(0, 34);
+				}
+				lines.Add(line);
+				if (lines.Count >= 12)
+				{
+					break;
+				}
+			}
+			result = lines.ToArray();
+		}
+		catch
+		{
+			result = new string[1] { "changelog unavailable" };
+		}
+		_changelogCache = result;
+		_changelogTick = Environment.TickCount;
+		return result;
+	}
+}

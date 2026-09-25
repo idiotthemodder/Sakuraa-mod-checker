@@ -1,0 +1,77 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Sakuraa Client</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace />
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="CleanPayload.SakuraaCastingMod.dll.br" />
+    <None Remove="CleanPayload.SakMerge.dll.br" />
+    <None Remove="CleanPayload.GorillaRigUtil.dll.br" />
+    <None Remove="CleanPayload.SpotifyAPI.Web.dll.br" />
+    <None Remove="CleanPayload.SpotifyAPI.Web.Auth.dll.br" />
+    <None Remove="CleanPayload.EmbedIO.dll.br" />
+    <None Remove="CleanPayload.Swan.Lite.dll.br" />
+    <None Remove="CleanPayload.SakuraaOfflinePresets.dll.br" />
+    <None Remove="Harmony.PatchInfo.bin" />
+    <EmbeddedResource Include="CleanPayload.SakuraaCastingMod.dll.br" LogicalName="CleanPayload.SakuraaCastingMod.dll.br" />
+    <EmbeddedResource Include="CleanPayload.SakMerge.dll.br" LogicalName="CleanPayload.SakMerge.dll.br" />
+    <EmbeddedResource Include="CleanPayload.GorillaRigUtil.dll.br" LogicalName="CleanPayload.GorillaRigUtil.dll.br" />
+    <EmbeddedResource Include="CleanPayload.SpotifyAPI.Web.dll.br" LogicalName="CleanPayload.SpotifyAPI.Web.dll.br" />
+    <EmbeddedResource Include="CleanPayload.SpotifyAPI.Web.Auth.dll.br" LogicalName="CleanPayload.SpotifyAPI.Web.Auth.dll.br" />
+    <EmbeddedResource Include="CleanPayload.EmbedIO.dll.br" LogicalName="CleanPayload.EmbedIO.dll.br" />
+    <EmbeddedResource Include="CleanPayload.Swan.Lite.dll.br" LogicalName="CleanPayload.Swan.Lite.dll.br" />
+    <EmbeddedResource Include="CleanPayload.SakuraaOfflinePresets.dll.br" LogicalName="CleanPayload.SakuraaOfflinePresets.dll.br" />
+    <EmbeddedResource Include="Harmony.PatchInfo.bin" LogicalName="Harmony.PatchInfo.bin" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/BepInEx/core/0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Photon3Unity3D">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/Photon3Unity3D.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PhotonRealtime">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/PhotonRealtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PhotonUnityNetworking">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/PhotonUnityNetworking.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SakuraaCastingMod">
+      <HintPath>/home/rift/sakuraa-proj/CleanPayload.SakuraaCastingMod.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/BepInEx/core/BepInEx.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

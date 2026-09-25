@@ -1,0 +1,78 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Sakuraa Client</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <RootNamespace />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    
+    <None Remove="CleanPayload.SakuraaCastingMod.dll" />
+    <None Remove="CleanPayload.SakMerge.dll" />
+    <None Remove="CleanPayload.GorillaRigUtil.dll" />
+    <None Remove="CleanPayload.SpotifyAPI.Web.dll" />
+    <None Remove="CleanPayload.SpotifyAPI.Web.Auth.dll" />
+    <None Remove="CleanPayload.EmbedIO.dll" />
+    <None Remove="CleanPayload.Swan.Lite.dll" />
+    <None Remove="CleanPayload.SakuraaOfflinePresets.dll" />
+    <None Remove="Harmony.PatchInfo.bin" />
+
+    <EmbeddedResource Include="CleanPayload.SakuraaCastingMod.dll"
+                      LogicalName="CleanPayload.SakuraaCastingMod.dll" />
+    <EmbeddedResource Include="CleanPayload.SakMerge.dll"
+                      LogicalName="CleanPayload.SakMerge.dll" />
+    <EmbeddedResource Include="CleanPayload.GorillaRigUtil.dll"
+                      LogicalName="CleanPayload.GorillaRigUtil.dll" />
+    <EmbeddedResource Include="CleanPayload.SpotifyAPI.Web.dll"
+                      LogicalName="CleanPayload.SpotifyAPI.Web.dll" />
+    <EmbeddedResource Include="CleanPayload.SpotifyAPI.Web.Auth.dll"
+                      LogicalName="CleanPayload.SpotifyAPI.Web.Auth.dll" />
+    <EmbeddedResource Include="CleanPayload.EmbedIO.dll"
+                      LogicalName="CleanPayload.EmbedIO.dll" />
+    <EmbeddedResource Include="CleanPayload.Swan.Lite.dll"
+                      LogicalName="CleanPayload.Swan.Lite.dll" />
+    <EmbeddedResource Include="CleanPayload.SakuraaOfflinePresets.dll"
+                      LogicalName="CleanPayload.SakuraaOfflinePresets.dll" />
+    <EmbeddedResource Include="Harmony.PatchInfo.bin"
+                      LogicalName="Harmony.PatchInfo.bin" />
+  </ItemGroup>
+
+  <ItemGroup>
+
+    <Reference Include="0Harmony">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/BepInEx/core/0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="BepInEx">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/BepInEx/core/BepInEx.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="UnityEngine">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>/path/to/Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+  </ItemGroup>
+
+</Project>
