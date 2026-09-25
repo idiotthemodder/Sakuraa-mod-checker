@@ -40,3 +40,6 @@ The known mods/cheats/unsure lists live in `BepInEx/config/sakuraa_known_*.txt` 
 ## Credit
 
 Built on top of the original Sakuraa Client mod. This repo is the Linux standalone rebuild plus a pile of extra features layered on top.
+All credits go to Sakuraadev.
+## Issues
+If you have any problems, please make an issue, or DM @idiot_the_modder on Discord.
