@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace SakuraaCameraClientStandalone;
 
-[BepInPlugin("com.dusted.sakuraa.standalone", "Sakuraa Camera Client - Recovered Standalone Build", "2.0.0")]
+[BepInPlugin("com.dusted.sakuraa.standalone", "Sakuraa Mod Checker for Linux", "1.3.0")]
 public sealed partial class StandalonePlugin : BaseUnityPlugin
 {
 	private static readonly Dictionary<string, string> ResourceNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
