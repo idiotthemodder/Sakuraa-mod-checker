@@ -41,21 +41,6 @@ public sealed class SakInfoPage : BasePage
 	
 	    Tabs.Add(lists);
 	
-	    UtilTab subscription = new UtilTab
-	    {
-	        TabIcon = UtilMenuMain.Instance.Icons.Server,
-	        TabName = "Subscription"
-	    };
-	    
-	    subscription.Elements.Add(new MenuElement(
-	        SubscriptionButtonText(),
-	        delegate
-	        {
-	            SubscriptionPatches.Enabled = !SubscriptionPatches.Enabled;
-	            RefreshMenu();
-	        }));
-	    
-	    Tabs.Add(subscription);
 	    
 	
 	    // Changelog
@@ -88,12 +73,7 @@ public sealed class SakInfoPage : BasePage
 			UtilMenuController.Instance.RefreshUI();
 		}
 	}
-	private static string SubscriptionButtonText()
-	{
-	    return SubscriptionPatches.Enabled
-	        ? "SUBSCRIPTION: ON"
-	        : "SUBSCRIPTION: OFF";
-	}
+
 	
 }
 
