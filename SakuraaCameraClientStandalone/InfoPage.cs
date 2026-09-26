@@ -18,37 +18,63 @@ public sealed class SakInfoPage : BasePage
 
 	public override void BuildTabs()
 	{
-		Tabs.Clear();
-		UtilTab lists = new UtilTab
-		{
-			TabIcon = UtilMenuMain.Instance.Icons.Server,
-			TabName = "Lists"
-		};
-		foreach (string line in StandalonePlugin.ListSummaryLines())
-		{
-			lists.Elements.Add(new MenuElement(line, delegate
-			{
-			}));
-		}
-		lists.Elements.Add(new MenuElement("RELOAD LISTS", delegate
-		{
-			StandalonePlugin.ReloadListsNow();
-			RefreshMenu();
-		}));
-		Tabs.Add(lists);
-		UtilTab changelog = new UtilTab
-		{
-			TabIcon = UtilMenuMain.Instance.Icons.Server,
-			TabName = "Changelog"
-		};
-		foreach (string line in StandalonePlugin.ChangelogLines())
-		{
-			changelog.Elements.Add(new MenuElement(line, delegate
-			{
-			}));
-		}
-		Tabs.Add(changelog);
+	    Tabs.Clear();
+	
+	    UtilTab lists = new UtilTab
+	    {
+	        TabIcon = UtilMenuMain.Instance.Icons.Server,
+	        TabName = "Lists"
+	    };
+	
+	    foreach (string line in StandalonePlugin.ListSummaryLines())
+	    {
+	        lists.Elements.Add(new MenuElement(line, delegate
+	        {
+	        }));
+	    }
+	
+	    lists.Elements.Add(new MenuElement("RELOAD LISTS", delegate
+	    {
+	        StandalonePlugin.ReloadListsNow();
+	        RefreshMenu();
+	    }));
+	
+	    Tabs.Add(lists);
+	
+	    UtilTab subscription = new UtilTab
+	    {
+	        TabIcon = UtilMenuMain.Instance.Icons.Server,
+	        TabName = "Subscription"
+	    };
+	    
+	    subscription.Elements.Add(new MenuElement(
+	        SubscriptionButtonText(),
+	        delegate
+	        {
+	            SubscriptionPatches.Enabled = !SubscriptionPatches.Enabled;
+	            RefreshMenu();
+	        }));
+	    
+	    Tabs.Add(subscription);
+	    
+	
+	    // Changelog
+	    UtilTab changelog = new UtilTab
+	    {
+	        TabIcon = UtilMenuMain.Instance.Icons.Server,
+	        TabName = "Changelog"
+	    };
+	
+	    foreach (string line in StandalonePlugin.ChangelogLines())
+	    {
+	        changelog.Elements.Add(new MenuElement(line, delegate
+	        {
+	        }));
+	    }
+	
+	    Tabs.Add(changelog);
 	}
+	
 
 	public override void RefreshPageUI()
 	{
@@ -62,6 +88,13 @@ public sealed class SakInfoPage : BasePage
 			UtilMenuController.Instance.RefreshUI();
 		}
 	}
+	private static string SubscriptionButtonText()
+	{
+	    return SubscriptionPatches.Enabled
+	        ? "SUBSCRIPTION: ON"
+	        : "SUBSCRIPTION: OFF";
+	}
+	
 }
 
 public static class MenuPages

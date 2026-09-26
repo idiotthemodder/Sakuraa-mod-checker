@@ -73,5 +73,10 @@
       <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    
   </ItemGroup>
 </Project>
