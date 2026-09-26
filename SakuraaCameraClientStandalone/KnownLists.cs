@@ -34,7 +34,15 @@ public sealed partial class StandalonePlugin
 	}
 
 	private static readonly string[] ListFiles = new string[3] { "sakuraa_known_mods.txt", "sakuraa_known_cheats.txt", "sakuraa_known_unsure.txt" };
+	private static readonly string[] RemoteListFiles = new string[3] { "mods.txt", "cheats.txt", "unsure.txt" };
 	private static readonly string[] ListFields = new string[3] { "_webKnownMods", "_webKnownCheats", "_hardcodedUnknownMods" };
+	private const string ListsRepoRawBase = "https://raw.githubusercontent.com/idiotthemodder/sakuraa-lists/main/";
+	private static readonly System.Net.Http.HttpClient _listsHttp = new System.Net.Http.HttpClient
+	{
+	    Timeout = TimeSpan.FromSeconds(10)
+	};
+	private static DateTime _lastGithubSync = DateTime.MinValue;
+	private static bool _githubSyncInFlight;
 	private static readonly HashSet<string>[] _listAdded = new HashSet<string>[3] { new HashSet<string>(), new HashSet<string>(), new HashSet<string>() };
 	private static readonly DateTime[] _listStamp = new DateTime[3];
 	private static readonly List<WildEntry> _wildcards = new List<WildEntry>();
@@ -45,6 +53,56 @@ public sealed partial class StandalonePlugin
 	internal static readonly string[] HelpCategoryNames = new string[3] { "Mods", "Cheats", "Unsure" };
 	internal static int SelectedHelpCategory = -1;
 	internal static string SelectedHelpKey;
+
+	internal static void SyncListsFromGithub(bool force = false)
+	{
+	    if (_githubSyncInFlight)
+	    {
+	        return;
+	    }
+	    if (!force && (DateTime.UtcNow - _lastGithubSync) < TimeSpan.FromMinutes(10))
+	    {
+	        return;
+	    }
+	    _githubSyncInFlight = true;
+	    _lastGithubSync = DateTime.UtcNow;
+	    System.Threading.Tasks.Task.Run(async () =>
+	    {
+	        bool anyChanged = false;
+	        try
+	        {
+	            for (int i = 0; i < ListFiles.Length; i++)
+	            {
+	                string fileName = ListFiles[i];
+	                try
+	                {
+	                    string url = ListsRepoRawBase + RemoteListFiles[i];
+	                    string content = await _listsHttp.GetStringAsync(url);
+	                    string localPath = Path.Combine(Paths.ConfigPath, fileName);
+	                    string existing = File.Exists(localPath) ? File.ReadAllText(localPath) : null;
+	                    if (existing != content)
+	                    {
+	                        File.WriteAllText(localPath, content);
+	                        anyChanged = true;
+	                        StatusLog("synced " + fileName + " from github");
+	                    }
+	                }
+	                catch (Exception exFile)
+	                {
+	                    StatusLog("github sync failed for " + fileName + ": " + exFile.Message);
+	                }
+	            }
+	        }
+	        finally
+	        {
+	            _githubSyncInFlight = false;
+	            if (anyChanged)
+	            {
+	                _listsReady = false; // forces EnsureListsLoaded to re-read on next tick
+	            }
+	        }
+	    });
+	}
 
 	internal static Dictionary<string, string> GetListDict(int index)
 	{
@@ -194,6 +252,7 @@ public sealed partial class StandalonePlugin
 			{
 				return;
 			}
+			SyncListsFromGithub();
 			if (!_listsReady)
 			{
 				if (!PhotonNetwork.InRoom)

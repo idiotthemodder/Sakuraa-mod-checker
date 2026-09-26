@@ -22,7 +22,6 @@ This project was rebuilt and extended with heavy help from Claude (Anthropic's A
 ```
 SakuraaCameraClientStandalone/   the actual mod source (this is the part I wrote/extended)
 sakuraa-cleaned.csproj           project file, builds a BepInEx plugin DLL
-CleanPayload.*.dll / .dll.br     rebuilt payload from the original Sakuraa Client source
 ```
 
 ## Building
