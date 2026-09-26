@@ -7,3 +7,5 @@ obj/
 CleanPayload.*.dll
 CleanPayload.*.dll.br
 Harmony.PatchInfo.bin
+*.bak*
+*.mine
