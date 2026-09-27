@@ -80,10 +80,12 @@ public sealed partial class StandalonePlugin : BaseUnityPlugin
 			StartThemeFix(assembly5);
 			StartNameTagPlus(assembly5);
 			StartThemeExtras();
+			StartSizeSpoof();
 			StartDiagnostics();
 			StartUnknownLogger(assembly5);
 			StartAllPropsDump();
 			InvokeLoader(assembly5, "Sakuraa camera client");
+			LoadSoundboardFromDisk();
 			Logger.LogInfo((object)"Recovered Sakuraa camera client started without the native launcher.");
 		}
 		catch (TargetInvocationException ex)

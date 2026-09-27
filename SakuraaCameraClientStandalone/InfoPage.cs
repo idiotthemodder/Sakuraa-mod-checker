@@ -124,6 +124,7 @@ public static class MenuPages
 			InsertAfter(pages, typeof(WorldPage), new MapLoaderPage());
 			pages.Add(new LyricsPage());
 			pages.Add(new ThemePage());
+			pages.Add(new SizeSpoofPage());
 			pages.Add(new AboutPage());
 			pages.Add(new ProfilesPage());
 			pages.Add(new SakInfoPage());

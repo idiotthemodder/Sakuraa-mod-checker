@@ -42,3 +42,6 @@ Built on top of the original Sakuraa Client mod. This repo is the Linux standalo
 All credits go to Sakuraadev.
 ## Issues
 If you have any problems, please make an issue, or DM @idiot_the_modder on Discord.
+
+## Building from source
+the original project's DLLS and source are needed so you will get that from https://github.com/y1ruc/SakuraaSource2
