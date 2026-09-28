@@ -17,8 +17,45 @@ namespace SakuraaCameraClientStandalone;
 // SoundboardPlayer.Play, so it goes out the same way a soundboard tile does.
 public sealed class TtsPage : BasePage
 {
-	private static readonly string[] Quick = { "hello", "good game", "thank you", "sorry", "one second", "nice one", "i am reporting you", "please be good", "stop cheating", "no", "yes", "hello, i am using text-to-speech to talk. Please do not report me, as i am not cheating.", "I made this mod with c sharp and i coded it fully by myself"};
-
+	private static readonly string[] Quick =
+	{
+	    "hello everyone",
+	    "how are you doing",
+	    "good game",
+	    "good luck",
+	    "well played",
+	    "nice play",
+	
+	    "that was close",
+	    "good try",
+	    "you got me",
+	    "what happened",
+	    "what are you doing",
+	    "wait a second",
+	
+	    "give me a moment",
+	    "can you hear me",
+	    "i made this mod fully by myself, and i coded it with c sharp which is a programming language. it is not cheating, and doesnt affect gameplay",
+	    "my game is lagging",
+	    "i am just testing this",
+	    "i am using text to speech",
+	
+	    "i am not cheating",
+	    "please don't report me",
+	    "let's be nice",
+	    "calm down",
+	    "no problem",
+	    "all good",
+	
+	    "that was funny",
+	    "nice one",
+	    "i surrender",
+	    "please stop",
+	    "see you later",
+	    "goodbye everyone"
+	};
+	
+	
 	private bool _editing;
 
 	private string _input = "";
@@ -64,7 +101,13 @@ public sealed class TtsPage : BasePage
 				TtsClient.Say(_input);
 			}
 		}));
-		speak.Elements.Add(new MenuElement("REPEAT LAST", delegate { TtsClient.Repeat(); }));
+		// speak.Elements.Add(new MenuElement("REPEAT LAST", delegate { TtsClient.Repeat(); }));
+		speak.Elements.Add(new MenuElement("CLEAR", delegate
+		{
+		    _input = "";
+		    Refresh();
+		}));
+		
 		speak.Elements.Add(new MenuElement("STOP", delegate { SoundboardPlayer.Stop(); }));
 		speak.Elements.Add(new MenuElement("HELPER: " + TtsClient.Status, delegate { Refresh(); }));
 		Tabs.Add(speak);
