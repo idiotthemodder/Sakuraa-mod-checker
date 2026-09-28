@@ -132,6 +132,7 @@ public static class MenuPages
 			pages.Add(new UnknownPage());
 			pages.Add(new DiagnosticsPage());
 			pages.Add(new TtsPage());
+			pages.Add(new PresencePage());
 			if (elliot != null)
 			{
 				pages.Add(elliot);
