@@ -188,7 +188,8 @@ public static class PresenceReporter
 			}
 			else
 			{
-				Status = req.downloadHandler.text.Contains("connected") ? "ONLINE" : "NO DISCORD";
+				string body = req.downloadHandler.text;
+				Status = (body.Contains("connected") || body.Contains("idle")) ? "ONLINE" : "NO DISCORD";
 			}
 		}
 		done?.Invoke();
