@@ -69,13 +69,29 @@ public sealed class TtsPage : BasePage
 		speak.Elements.Add(new MenuElement("HELPER: " + TtsClient.Status, delegate { Refresh(); }));
 		Tabs.Add(speak);
 
-		UtilTab quick = new UtilTab { TabIcon = UtilMenuMain.Instance.Icons.Server, TabName = "Quick" };
-		foreach (string phrase in Quick)
+		for (int i = 0; i < Quick.Length; i += 6)
 		{
-			string p = phrase;
-			quick.Elements.Add(new MenuElement(p.ToUpper(), delegate { TtsClient.Say(p); }));
+		    UtilTab quick = new UtilTab
+		    {
+		        TabIcon = UtilMenuMain.Instance.Icons.Server,
+		        TabName = "Quick " + ((i / 6) + 1)
+		    };
+		
+		    int end = Math.Min(i + 6, Quick.Length);
+		
+		    for (int j = i; j < end; j++)
+		    {
+		        string p = Quick[j];
+		
+		        quick.Elements.Add(new MenuElement(
+		            p.ToUpper(),
+		            delegate { TtsClient.Say(p); }
+		        ));
+		    }
+		
+		    Tabs.Add(quick);
 		}
-		Tabs.Add(quick);
+		
 	}
 
 	private void FinishEditing(bool speakIt)
