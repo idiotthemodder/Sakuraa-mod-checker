@@ -17,7 +17,7 @@ namespace SakuraaCameraClientStandalone;
 // SoundboardPlayer.Play, so it goes out the same way a soundboard tile does.
 public sealed class TtsPage : BasePage
 {
-	private static readonly string[] Quick = { "hello", "good game", "thank you", "sorry", "one second", "nice one" };
+	private static readonly string[] Quick = { "hello", "good game", "thank you", "sorry", "one second", "nice one", "i am reporting you", "please be good", "stop cheating", "no", "yes", "hello, i am using text-to-speech to talk. Please do not report me, as i am not cheating.", "I made this mod with c sharp and i coded it fully by myself"};
 
 	private bool _editing;
 
