@@ -71,6 +71,7 @@ public sealed partial class StandalonePlugin : BaseUnityPlugin
 			ConfigureStandaloneFeatures(assembly5);
 			PatchSpotifyClientId(assembly5);
 			PatchSpotifyTabs();
+			SoundboardFix.Install();
 			PatchMediaKeys(assembly5);
 			PatchKnownLists(assembly5);
 			PatchMenuPages(assembly5);

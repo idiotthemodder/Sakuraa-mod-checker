@@ -49,6 +49,10 @@
       <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/PhotonRealtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/UnityEngine.AudioModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="PhotonUnityNetworking">
       <HintPath>/home/rift/.local/share/Steam/steamapps/common/Gorilla Tag/Gorilla Tag_Data/Managed/PhotonUnityNetworking.dll</HintPath>
       <Private>False</Private>
