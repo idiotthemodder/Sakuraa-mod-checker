@@ -104,6 +104,27 @@ public static class SoundboardFix
 		{
 			return "Z:" + p;
 		}
+		// the manifest gives a flat folder + filename, but the wavs can live in subfolders
+		// (SakuraaSounds/Meme-troll/x.wav), so look for the filename anywhere under the folder
+		try
+		{
+			string dir = Path.GetDirectoryName(p);
+			string file = Path.GetFileName(p);
+			if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir))
+			{
+				foreach (string hit in Directory.GetFiles(dir, "*", SearchOption.AllDirectories))
+				{
+					if (string.Equals(Path.GetFileName(hit), file, StringComparison.OrdinalIgnoreCase))
+					{
+						return hit.Replace('\\', '/');
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			StandalonePlugin.StatusLog("soundboard: subfolder search failed: " + ex.Message);
+		}
 		return p;
 	}
 
