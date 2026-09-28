@@ -17,38 +17,42 @@ namespace SakuraaCameraClientStandalone;
 // SoundboardPlayer.Play, so it goes out the same way a soundboard tile does.
 public sealed class TtsPage : BasePage
 {
-	private static readonly string[] Quick =
+	// the menu has 6 tab slots and 6 rows per tab.
+	// slots used: 1 (Speak) + PlayerTabs (Player, Mod Talk, Callouts, Social, in that order) + quick pages.
+	// PlayerTabs = 3 gives 2 quick pages (12 lines). 2 gives 3 pages (18 lines). 4 gives 1 page (6 lines).
+	private const int MaxTabs = 6;
+
+	private const int PlayerTabs = 3;
+
+	// each entry is { button label, what gets spoken }. keep labels short so they fit on the button.
+	// the best lines are first, since only the first few pages actually show.
+	private static readonly string[][] Quick =
 	{
-	    "hello everyone",
-	    "how are you doing",
-	    "good game",
-	    "good luck",
-	    "well played",
-	    "nice play",
-	
-	    "give me a moment",
-	    "can you hear me",
-	    "i made this mod fully by myself, and i coded it with c sharp which is a programming language. it is not cheating, and doesnt affect gameplay",
-	    "my game is lagging",
-	    "i am just testing this",
-	    "i am using text to speech",
-	
-	    "i am not cheating",
-	    "please don't report me",
-	    "let's be nice",
-	    "calm down",
-	    "no problem",
-	    "all good",
-	
-	    "that was funny",
-	    "nice one",
-	    "i surrender",
-	    "please stop",
-	    "see you later",
-	    "goodbye everyone"
+		// page 1: everyday chat
+		new[] { "HELLO", "hello everyone" },
+		new[] { "GG", "good game" },
+		new[] { "GOOD LUCK", "good luck" },
+		new[] { "WELL PLAYED", "well played" },
+		new[] { "NICE ONE", "nice one" },
+		new[] { "THANK YOU", "thank you" },
+
+		// page 2: talking about yourself and the mod
+		new[] { "SORRY", "sorry about that" },
+		new[] { "CAN YOU HEAR ME", "can you hear me" },
+		new[] { "ONE SECOND", "one second please" },
+		new[] { "USING TTS", "i am using text to speech" },
+		new[] { "ABOUT MY MOD", "i made this mod fully by myself, and i coded it with c sharp which is a programming language. it is not cheating, and does not affect gameplay" },
+		new[] { "BYE", "see you later everyone" },
+
+		// page 3: only shows if PlayerTabs is 2 or less
+		new[] { "CLOSE ONE", "that was close" },
+		new[] { "GOOD TRY", "good try" },
+		new[] { "YOU GOT ME", "you got me" },
+		new[] { "LAGGING", "my game is lagging" },
+		new[] { "BE NICE", "let's all be nice" },
+		new[] { "GOODBYE", "goodbye everyone" }
 	};
-	
-	
+
 	private bool _editing;
 
 	private string _input = "";
@@ -94,42 +98,40 @@ public sealed class TtsPage : BasePage
 				TtsClient.Say(_input);
 			}
 		}));
-		// speak.Elements.Add(new MenuElement("REPEAT LAST", delegate { TtsClient.Repeat(); }));
 		speak.Elements.Add(new MenuElement("CLEAR", delegate
 		{
-		    _input = "";
-		    Refresh();
+			_input = "";
+			if (_editing && KeyboardController.Instance != null)
+			{
+				KeyboardController.Instance.currentInput = "";
+			}
+			Refresh();
 		}));
-		
 		speak.Elements.Add(new MenuElement("STOP", delegate { SoundboardPlayer.Stop(); }));
 		speak.Elements.Add(new MenuElement("HELPER: " + TtsClient.Status, delegate { Refresh(); }));
 		Tabs.Add(speak);
 
-		TtsPlayerTools.AddTabs(Tabs, Refresh);
+		// tabs that work off the player picked in the Lobby tab
+		TtsPlayerTools.AddTabs(Tabs, Refresh, PlayerTabs);
 
-		for (int i = 0; i < Quick.Length; i += 6)
+		// quick lines fill whatever tab slots are left
+		int page = 1;
+		for (int i = 0; i < Quick.Length && Tabs.Count < MaxTabs; i += 6)
 		{
-		    UtilTab quick = new UtilTab
-		    {
-		        TabIcon = UtilMenuMain.Instance.Icons.Server,
-		        TabName = "Quick " + ((i / 6) + 1)
-		    };
-		
-		    int end = Math.Min(i + 6, Quick.Length);
-		
-		    for (int j = i; j < end; j++)
-		    {
-		        string p = Quick[j];
-		
-		        quick.Elements.Add(new MenuElement(
-		            p.ToUpper(),
-		            delegate { TtsClient.Say(p); }
-		        ));
-		    }
-		
-		    Tabs.Add(quick);
+			UtilTab quick = new UtilTab
+			{
+				TabIcon = UtilMenuMain.Instance.Icons.Server,
+				TabName = "Quick " + page
+			};
+			int end = Math.Min(i + 6, Quick.Length);
+			for (int j = i; j < end; j++)
+			{
+				string spoken = Quick[j][1];
+				quick.Elements.Add(new MenuElement(Quick[j][0], delegate { TtsClient.Say(spoken); }));
+			}
+			Tabs.Add(quick);
+			page++;
 		}
-		
 	}
 
 	private void FinishEditing(bool speakIt)

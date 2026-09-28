@@ -11,13 +11,13 @@ using UnityEngine;
 namespace SakuraaCameraClientStandalone;
 
 // tts tabs that work off whoever you picked in the Lobby tab.
-// hook it into TtsPage.BuildTabs with:   TtsPlayerTools.AddTabs(Tabs, Refresh);
+// hook it into TtsPage.BuildTabs with:   TtsPlayerTools.AddTabs(Tabs, Refresh, 4);
 // everything goes through TtsClient.Say, so it comes out of your mic like the rest of tts.
 public static class TtsPlayerTools
 {
 	private static readonly string[] Friendly =
 	{
-		"hey {name}", "gg {name}", "nice one {name}", "thanks {name}", "sorry {name}", "welcome {name}"
+		"hey {name}", "gg {name}", "nice one {name}", "thanks {name}", "sorry {name}"
 	};
 
 	private static readonly string[] Callouts =
@@ -27,7 +27,7 @@ public static class TtsPlayerTools
 
 	private static readonly string[] Social =
 	{
-		"wanna party {name}", "add me {name}", "can you join my room {name}"
+		"welcome {name}", "wanna party {name}", "add me {name}", "can you join my room {name}"
 	};
 
 	private static readonly string[] Compliments =
@@ -37,35 +37,65 @@ public static class TtsPlayerTools
 
 	private static FieldInfo _selectedField;
 
-	public static void AddTabs(List<UtilTab> tabs, Action refresh)
+	// the menu only has 6 tab slots and 6 rows per tab, so every tab here has at most 6 elements.
+	// maxTabs is how many tab slots this may use. tabs are added in this priority order:
+	// Player, Mod Talk, Callouts, Social
+	public static void AddTabs(List<UtilTab> tabs, Action refresh, int maxTabs)
 	{
+		if (maxTabs <= 0)
+		{
+			return;
+		}
+		int start = tabs.Count;
 		string name = SelectedName();
 
-		UtilTab say = new UtilTab { TabIcon = UtilMenuMain.Instance.Icons.Server, TabName = "Player" };
+		UtilTab player = NewTab("Player");
 		if (name == null)
 		{
-			say.Elements.Add(new MenuElement("PICK A PLAYER IN LOBBY", delegate { refresh(); }));
-			say.Elements.Add(new MenuElement("THEN TAP HERE TO REFRESH", delegate { refresh(); }));
-			tabs.Add(say);
+			player.Elements.Add(new MenuElement("PICK A PLAYER IN LOBBY", delegate { refresh(); }));
+			player.Elements.Add(new MenuElement("THEN TAP HERE TO REFRESH", delegate { refresh(); }));
+			tabs.Add(player);
+			return;
+		}
+		player.Elements.Add(new MenuElement("PLAYER: " + Short(name).ToUpper(), delegate { refresh(); }));
+		AddLines(player, Friendly);
+		tabs.Add(player);
+		if (tabs.Count - start >= maxTabs)
+		{
 			return;
 		}
 
-		say.Elements.Add(new MenuElement("PLAYER: " + Short(name).ToUpper(), delegate { refresh(); }));
-		AddLines(say, Friendly);
-		AddLines(say, Callouts);
-		AddLines(say, Social);
-		say.Elements.Add(new MenuElement("RANDOM COMPLIMENT", delegate
-		{
-			Speak(Compliments[UnityEngine.Random.Range(0, Compliments.Length)]);
-		}));
-		tabs.Add(say);
-
-		UtilTab talk = new UtilTab { TabIcon = UtilMenuMain.Instance.Icons.Server, TabName = "Mod Talk" };
+		UtilTab talk = NewTab("Mod Talk");
 		talk.Elements.Add(new MenuElement("SAY MOD COUNT", delegate { SayCounts(); }));
 		talk.Elements.Add(new MenuElement("SAY THEIR CHEATS", delegate { SayCheats(); }));
 		talk.Elements.Add(new MenuElement("SAY THEIR MODS", delegate { SayMods(); }));
 		talk.Elements.Add(new MenuElement("SAY IF CLEAN", delegate { SayClean(); }));
 		tabs.Add(talk);
+		if (tabs.Count - start >= maxTabs)
+		{
+			return;
+		}
+
+		UtilTab calls = NewTab("Callouts");
+		AddLines(calls, Callouts);
+		calls.Elements.Add(new MenuElement("RANDOM COMPLIMENT", delegate
+		{
+			Speak(Compliments[UnityEngine.Random.Range(0, Compliments.Length)]);
+		}));
+		tabs.Add(calls);
+		if (tabs.Count - start >= maxTabs)
+		{
+			return;
+		}
+
+		UtilTab social = NewTab("Social");
+		AddLines(social, Social);
+		tabs.Add(social);
+	}
+
+	private static UtilTab NewTab(string title)
+	{
+		return new UtilTab { TabIcon = UtilMenuMain.Instance.Icons.Server, TabName = title };
 	}
 
 	private static void AddLines(UtilTab tab, string[] lines)
