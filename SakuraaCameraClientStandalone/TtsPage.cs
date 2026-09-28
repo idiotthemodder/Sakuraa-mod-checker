@@ -26,13 +26,6 @@ public sealed class TtsPage : BasePage
 	    "well played",
 	    "nice play",
 	
-	    "that was close",
-	    "good try",
-	    "you got me",
-	    "what happened",
-	    "what are you doing",
-	    "wait a second",
-	
 	    "give me a moment",
 	    "can you hear me",
 	    "i made this mod fully by myself, and i coded it with c sharp which is a programming language. it is not cheating, and doesnt affect gameplay",
@@ -111,6 +104,8 @@ public sealed class TtsPage : BasePage
 		speak.Elements.Add(new MenuElement("STOP", delegate { SoundboardPlayer.Stop(); }));
 		speak.Elements.Add(new MenuElement("HELPER: " + TtsClient.Status, delegate { Refresh(); }));
 		Tabs.Add(speak);
+
+		TtsPlayerTools.AddTabs(Tabs, Refresh);
 
 		for (int i = 0; i < Quick.Length; i += 6)
 		{
