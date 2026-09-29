@@ -16,10 +16,10 @@ using UnityEngine.Networking;
 
 namespace SakuraaCameraClientStandalone;
 
-// TTS page. four tabs: SPEAK, QUICK, PLAYER, SETTINGS.
-// QUICK and PLAYER expand: tap a category (Friendly, Game, Callouts, Compliments, Info) to see its lines,
-// MORE flips through extra lines, BACK returns to the category list.
-// PLAYER works off whoever you picked in the Lobby tab, and fills {name} into each line.
+// TTS page, 3 tabs: PLAYER, SETTINGS, PREMADE.
+// PLAYER and PREMADE both expand: tap a category (Friendly, Game, Callouts, Compliments, Info)
+// to see its lines, MORE flips through extra lines, < BACK returns to the category list.
+// PLAYER's lines fill in whoever is picked in the Lobby tab; PREMADE's lines are fixed text.
 // flow: page -> TtsClient.Say -> helper (127.0.0.1:8770) makes a wav -> SoundboardPlayer.Play,
 // so it goes out the same way a soundboard tile does.
 public sealed class TtsPage : BasePage
@@ -57,7 +57,7 @@ public sealed class TtsPage : BasePage
 	}
 
 	// { button label, what gets spoken }. player lines use {name}.
-	private static readonly string[][] QuickFriendly =
+	private static readonly string[][] PremadeFriendly =
 	{
 		new[] { "HELLO", "hello everyone" },
 		new[] { "GG", "good game" },
@@ -69,7 +69,7 @@ public sealed class TtsPage : BasePage
 		new[] { "BYE", "goodbye everyone" }
 	};
 
-	private static readonly string[][] QuickGame =
+	private static readonly string[][] PremadeGame =
 	{
 		new[] { "CLOSE ONE", "that was close" },
 		new[] { "GOOD TRY", "good try" },
@@ -81,7 +81,7 @@ public sealed class TtsPage : BasePage
 		new[] { "PLAY AGAIN", "let's play again" }
 	};
 
-	private static readonly string[][] QuickCallouts =
+	private static readonly string[][] PremadeCallouts =
 	{
 		new[] { "I AM IT", "i am it" },
 		new[] { "WHO IS IT", "who is it" },
@@ -93,7 +93,7 @@ public sealed class TtsPage : BasePage
 		new[] { "HELP", "help me please" }
 	};
 
-	private static readonly string[][] QuickCompliments =
+	private static readonly string[][] PremadeCompliments =
 	{
 		new[] { "NICE MOVES", "nice moves" },
 		new[] { "SO GOOD", "you are really good" },
@@ -104,7 +104,7 @@ public sealed class TtsPage : BasePage
 		new[] { "SO FAST", "you are so fast" }
 	};
 
-	private static readonly string[][] QuickInfo =
+	private static readonly string[][] PremadeInfo =
 	{
 		new[] { "CAN YOU HEAR ME", "can you hear me" },
 		new[] { "USING TTS", "i am using text to speech" },
@@ -160,9 +160,9 @@ public sealed class TtsPage : BasePage
 		new[] { "CRACKED", "{name} you are actually cracked" }
 	};
 
-	private readonly Nav _quickNav = new Nav();
-
 	private readonly Nav _playerNav = new Nav();
+
+	private readonly Nav _premadeNav = new Nav();
 
 	private bool _editing;
 
@@ -175,10 +175,9 @@ public sealed class TtsPage : BasePage
 	public override void BuildTabs()
 	{
 		Tabs.Clear();
-		Tabs.Add(BuildSpeakTab());
-		Tabs.Add(BuildQuickTab());
 		Tabs.Add(BuildPlayerTab());
 		Tabs.Add(BuildSettingsTab());
+		Tabs.Add(BuildPremadeTab());
 	}
 
 	private UtilTab NewTab(string title)
@@ -186,11 +185,46 @@ public sealed class TtsPage : BasePage
 		return new UtilTab { TabIcon = UtilMenuMain.Instance.Icons.Server, TabName = title };
 	}
 
-	// ---------- SPEAK ----------
+	// ---------- PLAYER ----------
 
-	private UtilTab BuildSpeakTab()
+	private UtilTab BuildPlayerTab()
 	{
-		UtilTab tab = NewTab("Speak");
+		UtilTab tab = NewTab("Player");
+		string name = TtsPlayers.SelectedName();
+		if (name == null)
+		{
+			_playerNav.Cat = -1;
+			tab.Elements.Add(new MenuElement("PICK A PLAYER IN LOBBY", delegate { Refresh(); }));
+			tab.Elements.Add(new MenuElement("THEN TAP HERE", delegate { Refresh(); }));
+			return tab;
+		}
+		List<Category> cats = new List<Category>
+		{
+			FromLines("FRIENDLY", PlayerFriendly, false),
+			FromLines("GAME", PlayerGame, false),
+			FromLines("CALLOUTS", PlayerCallouts, false),
+			FromLines("COMPLIMENTS", PlayerCompliments, true),
+			BuildInfoCategory()
+		};
+		Browse(tab, cats, _playerNav, "PLAYER: " + Shorten(name));
+		return tab;
+	}
+
+	private static Category BuildInfoCategory()
+	{
+		Category info = new Category("INFO");
+		info.Entries.Add(new Entry("MOD COUNT", TtsPlayers.SayCounts));
+		info.Entries.Add(new Entry("THEIR CHEATS", TtsPlayers.SayCheats));
+		info.Entries.Add(new Entry("THEIR MODS", TtsPlayers.SayMods));
+		info.Entries.Add(new Entry("IS CLEAN?", TtsPlayers.SayClean));
+		return info;
+	}
+
+	// ---------- SETTINGS (also where you type a custom message) ----------
+
+	private UtilTab BuildSettingsTab()
+	{
+		UtilTab tab = NewTab("Settings");
 		string label = !_editing ? "TYPE MESSAGE" : (_input == "" ? "TYPE..." : _input.ToUpper());
 		ElementType type = _editing ? ElementType.Input : ElementType.Button;
 		tab.Elements.Add(new MenuElement(label, delegate
@@ -231,68 +265,6 @@ public sealed class TtsPage : BasePage
 			}
 			Refresh();
 		}));
-		tab.Elements.Add(new MenuElement("REPEAT LAST", delegate { TtsClient.Repeat(); }));
-		tab.Elements.Add(new MenuElement("STOP", delegate { SoundboardPlayer.Stop(); }));
-		return tab;
-	}
-
-	// ---------- QUICK ----------
-
-	private UtilTab BuildQuickTab()
-	{
-		UtilTab tab = NewTab("Quick");
-		List<Category> cats = new List<Category>
-		{
-			FromLines("FRIENDLY", QuickFriendly, false),
-			FromLines("GAME", QuickGame, false),
-			FromLines("CALLOUTS", QuickCallouts, false),
-			FromLines("COMPLIMENTS", QuickCompliments, true),
-			FromLines("INFO", QuickInfo, false)
-		};
-		Browse(tab, cats, _quickNav, null);
-		return tab;
-	}
-
-	// ---------- PLAYER ----------
-
-	private UtilTab BuildPlayerTab()
-	{
-		UtilTab tab = NewTab("Player");
-		string name = TtsPlayers.SelectedName();
-		if (name == null)
-		{
-			_playerNav.Cat = -1;
-			tab.Elements.Add(new MenuElement("PICK A PLAYER IN LOBBY", delegate { Refresh(); }));
-			tab.Elements.Add(new MenuElement("THEN TAP HERE", delegate { Refresh(); }));
-			return tab;
-		}
-		List<Category> cats = new List<Category>
-		{
-			FromLines("FRIENDLY", PlayerFriendly, false),
-			FromLines("GAME", PlayerGame, false),
-			FromLines("CALLOUTS", PlayerCallouts, false),
-			FromLines("COMPLIMENTS", PlayerCompliments, true),
-			BuildInfoCategory()
-		};
-		Browse(tab, cats, _playerNav, "PLAYER: " + Shorten(name));
-		return tab;
-	}
-
-	private static Category BuildInfoCategory()
-	{
-		Category info = new Category("INFO");
-		info.Entries.Add(new Entry("MOD COUNT", TtsPlayers.SayCounts));
-		info.Entries.Add(new Entry("THEIR CHEATS", TtsPlayers.SayCheats));
-		info.Entries.Add(new Entry("THEIR MODS", TtsPlayers.SayMods));
-		info.Entries.Add(new Entry("IS CLEAN?", TtsPlayers.SayClean));
-		return info;
-	}
-
-	// ---------- SETTINGS ----------
-
-	private UtilTab BuildSettingsTab()
-	{
-		UtilTab tab = NewTab("Settings");
 		tab.Elements.Add(new MenuElement("HELPER: " + TtsClient.Status, delegate
 		{
 			TtsClient.Ping(Refresh);
@@ -302,8 +274,24 @@ public sealed class TtsPage : BasePage
 			TtsClient.CycleSpeed();
 			Refresh();
 		}));
-		tab.Elements.Add(new MenuElement("TEST VOICE", delegate { TtsClient.Say("this is a test of the voice"); }));
 		tab.Elements.Add(new MenuElement("STOP", delegate { SoundboardPlayer.Stop(); }));
+		return tab;
+	}
+
+	// ---------- PREMADE ----------
+
+	private UtilTab BuildPremadeTab()
+	{
+		UtilTab tab = NewTab("Premade");
+		List<Category> cats = new List<Category>
+		{
+			FromLines("FRIENDLY", PremadeFriendly, false),
+			FromLines("GAME", PremadeGame, false),
+			FromLines("CALLOUTS", PremadeCallouts, false),
+			FromLines("COMPLIMENTS", PremadeCompliments, true),
+			FromLines("INFO", PremadeInfo, false)
+		};
+		Browse(tab, cats, _premadeNav, null);
 		return tab;
 	}
 
