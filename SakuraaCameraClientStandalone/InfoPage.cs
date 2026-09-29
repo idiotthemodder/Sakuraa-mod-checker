@@ -110,7 +110,6 @@ public static class MenuPages
 		try
 		{
 			List<BasePage> pages = __instance.Pages;
-			pages.Insert(0, new TtsPage());
 			BasePage settings = pages.Find((BasePage p) => p is SettingsPage);
 			BasePage elliot = pages.Find((BasePage p) => p is ElliotPage);
 			if (settings != null)
